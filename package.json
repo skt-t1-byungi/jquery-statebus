@@ -1,0 +1,60 @@
+{
+  "name": "jquery-statebus",
+  "description": "0.5kb jquery MVC plugin.",
+  "version": "0.0.0",
+  "author": {
+    "name": "skt-t1-byungi",
+    "email": "tiniwz@gmail.com"
+  },
+  "keywords": [
+    "jquery",
+    "state",
+    "eventbus",
+    "model",
+    "mvc"
+  ],
+  "main": "jquery-statebus.js",
+  "unpkg": "jquery-statebus.min.js",
+  "files": [
+    "jquery-statebus.js",
+    "jquery-statebus.min.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/skt-t1-byungi/jquery-statebus.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "uglifyjs jquery-statebus.js -c -m --ie8 -o jquery-statebus.min.js",
+    "prepublishOnly": "npm run test && npm run build",
+    "prepush": "npm run test && npm run build",
+    "test": "ava"
+  },
+  "eslintConfig": {
+    "extends": "byungi/old",
+    "globals": {
+      "define": true,
+      "require": true,
+      "module": true
+    }
+  },
+  "eslintIgnore": [
+    "jquery-statebus.min.js",
+    "browser-env.js",
+    "test.js"
+  ],
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "browser-env": "^3.2.5",
+    "eslint": "^4.19.1",
+    "eslint-config-byungi": "^0.0.16",
+    "husky": "^0.14.3",
+    "jquery": "^3.3.1",
+    "uglify-js": "^3.3.27"
+  },
+  "ava": {
+    "require": [
+      "./browser-env.js"
+    ]
+  }
+}
