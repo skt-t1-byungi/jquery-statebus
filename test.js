@@ -1,6 +1,6 @@
 const test = require('ava')
 const $ = require('jquery');
-require('./jquery-statebus')(null, $);
+require('./jquery-statebus')();
 
 test(t =>{
   const $$ = $.statebus

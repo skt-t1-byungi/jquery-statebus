@@ -1,5 +1,5 @@
 # jquery-statebus
-🚍 0.5kb Small jQuery MVC plugin.
+🚍 0.5KB Small state library for jQuery
 
 ## License
 MIT
