@@ -50,17 +50,17 @@
     // Create actions.
     $.each(definition.action || {}, function (actName, func) {
       localAction[actName] = function () {
-        $.extend(localState, clone(func.apply(instance, arguments) || {}))
+        $.extend(localState, clone(func.apply(instance, arguments)))
         emitter.trigger(namespace + '.' + actName)
       }
     })
 
     // returns with `on()`
-    return $.extend(instance, {
+    return $.extend({
       on: function (evtName, listener) {
         emitter.on(namespace + '.' + evtName, listener)
       }
-    })
+    }, instance)
   }
 
   function clone (state) {
