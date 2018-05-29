@@ -32,7 +32,7 @@
       localAction[actName] = function () {
         var prevState = clone(localState)
         $.extend(localState, clone(func.apply(localBus, arguments)))
-        emit(actName, prevState, namespace)
+        emitter.trigger(namespace + '.' + actName, [prevState])
       }
     })
 
@@ -47,22 +47,14 @@
   function on (bus, namespace, evtName, listener, immediately) {
     if (immediately) listener(bus.state, bus.state, bus.action)
 
-    emitter.on(resolveNamespace(evtName, namespace), function (_, prevState) {
-      listener(bus.state, prevState, bus.action)
-    })
-  }
-
-  function emit (evtName, prevState, namespace) {
-    emitter.trigger(resolveNamespace(evtName, namespace), [prevState])
-  }
-
-  function resolveNamespace (evtName, namespace) {
-    if (!namespace) return evtName
-
-    var mapper = function (name) {
-      return namespace + '.' + name
+    if (namespace) {
+      evtName = $.map(evtName.split(/\s+/), function (name) {
+        return namespace + '.' + name
+      }).join(' ')
     }
 
-    return $.map(evtName.split(/\s+/), mapper).join(' ')
+    emitter.on(evtName, function (_, prevState) {
+      listener(bus.state, prevState, bus.action)
+    })
   }
 }))
