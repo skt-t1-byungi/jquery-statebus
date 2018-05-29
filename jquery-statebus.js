@@ -24,9 +24,8 @@
   $.statebus = $.extend(statebus, {
     state: globalState,
     action: globalAction,
-    on: function (evtName, listener) {
-      emitter.on(evtName, listener)
-    }
+    on: $.proxy(on, null, {state: globalState, action: globalAction}),
+    render: render
   })
 
   // Create a bus.
@@ -51,19 +50,34 @@
     $.each(definition.action || {}, function (actName, func) {
       localAction[actName] = function () {
         $.extend(localState, clone(func.apply(instance, arguments)))
-        emitter.trigger(namespace + '.' + actName)
+        render(namespace, actName)
       }
     })
 
     // returns with `on()`
     return $.extend({
-      on: function (evtName, listener) {
-        emitter.on(namespace + '.' + evtName, listener)
-      }
+      on: $.proxy(on, null, instance, namespace),
+      render: $.proxy(render, null, namespace)
     }, instance)
   }
 
   function clone (state) {
     return state ? JSON.parse(JSON.stringify(state)) : {}
+  }
+
+  function on (bus, namespace, evtName, listener) {
+    if (typeof evtName === 'function') {
+      listener = evtName
+      evtName = namespace
+      namespace = null
+    }
+
+    emitter.on((namespace ? namespace + '.' : '') + evtName, function () {
+      listener(bus.state, bus.action)
+    })
+  }
+
+  function render (namespace, actName) {
+    emitter.trigger(namespace ? namespace + '.' + actName : namespace)
   }
 }))
