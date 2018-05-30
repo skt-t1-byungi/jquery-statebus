@@ -16,9 +16,12 @@
       throw new TypeError('Expected type of "string", but "' + typeof namespace + '".')
     }
 
+    // if already, remove event listeners
+    emitter.off(namespace)
+
     // bus instance
-    var localState = globalState[namespace] || (globalState[namespace] = {})
-    var localAction = globalAction[namespace] || (globalAction[namespace] = {})
+    var localState = globalState[namespace] = {}
+    var localAction = globalAction[namespace] = {}
     var localBus = {
       state: localState,
       action: localAction
