@@ -48,7 +48,7 @@
   }
 
   function on (bus, namespace, evtName, listener, immediately) {
-    if (immediately) listener(bus.state, bus.state, bus.action)
+    if (immediately) listener(bus.state, null, bus.action)
 
     if (namespace) {
       evtName = $.map(evtName.split(/\s+/), function (name) {
