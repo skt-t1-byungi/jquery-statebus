@@ -17,20 +17,20 @@ var counter = $.statebus('counter', {
   }
 })
 
-var $counter = $('.counter')
-var $result = $counter.find('[data-counter="value"]')
-
-$counter.on('click', '[data-do-counter-increment]', function(){
+var $el = $('.counter')
+$el.on('click', '[data-do-counter-increment]', function(){
   counter.action.increment(1)
 })
-$counter.on('click', '[data-do-counter-decrement]', function(){
+$el.on('click', '[data-do-counter-decrement]', function(){
   counter.action.decrement(1)
 })
 
 counter.on('increment decrement', function(state){
-  $result.text(state.value)
+  $el.find('.txt').text(state.value)
 })
 ```
+
+
 
 ## License
 MIT
