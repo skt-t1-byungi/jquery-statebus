@@ -30,9 +30,11 @@ counter.on('increment decrement', function(state){
 })
 ```
 
-## what?
+## What?
 jquery-statebus는 뷰(jquery로 작성된)에서 상태를 분리하는 아주 간단한 패턴을 제공합니다. 
-디자인이 바뀌어도 자바스크립트가 망가지지 않습니다. 기능확장이 편합니다. backbone 보다 더 쉽습니다.
+- 디자인이 바뀌어도 자바스크립트가 망가지지 않습니다. 
+- 기능확장이 편합니다.
+- backbone 보다 더 쉽습니다.
 
 ## How to use
 ### State
