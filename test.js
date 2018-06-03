@@ -70,3 +70,13 @@ test('listener parameters (state, prevState, action)', t =>{
 
   t.is(hits, 2)
 })
+
+test('multiple(array) subscribe', t =>{
+  const bus = testBus('test4')
+
+  let hits = 0
+  bus.on(['increment', 'incrementOne'], _ => hits++)
+  bus.action.incrementOne() 
+
+  t.is(hits, 2)
+})
