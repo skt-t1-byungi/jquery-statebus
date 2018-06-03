@@ -38,6 +38,19 @@ counter.on('increment decrement', function(state){
 - easier than backbone.
 - small and light.
 
+## Install
+```sh
+yarn install jquery-statebus
+```
+```js
+// index.js
+require('jquery-statebus');
+```
+### browser
+```html
+<script src="https://unpkg.com/jquery-statebus"></script>
+```
+
 ## How to use
 ### State
 Defines a state with namespace.

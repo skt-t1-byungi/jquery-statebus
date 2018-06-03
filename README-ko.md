@@ -38,6 +38,19 @@ jquery-statebus는 **view**(jquery로 작성된)에서 상태를 분리하는 �
 - backbone 보다 더 쉽습니다.
 - 작고 가볍습니다.
 
+## Install
+```sh
+yarn install jquery-statebus
+```
+```js
+// index.js
+require('jquery-statebus');
+```
+### browser
+```html
+<script src="https://unpkg.com/jquery-statebus"></script>
+```
+
 ## How to use
 ### State
 namespace로 **state**를 정의합니다.
