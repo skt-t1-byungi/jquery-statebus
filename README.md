@@ -137,19 +137,19 @@ $('#counter > button.increment').click(function(){
 ```
 **state** is from **view**.
 
-<div style="text-align:center"><img src="./assets/1.png"></div>
+<p align="center"><img src="./assets/1.png"></p>
 
 It is like this diagram.
 
-<div style="text-align:center"><img src="./assets/2.png"></div>
+<p align="center"><img src="./assets/2.png"></p>
 
 Make increasingly complex networks. Design changes and extend new feature become difficult.
 
-<div style="text-align:center"><img src="./assets/3.png"></div>
+<p align="center"><img src="./assets/3.png"></p>
 
 Decoupling **state** and **view** with jquery-statebus can improve this complexity.
 
-<div style="text-align:center"><img src="./assets/4.png"></div>
+<p align="center"><img src="./assets/4.png"></p>
 
 **state** gets it from an independent object in memory, which reduces the risk of other JavaScript codes being broken by **view** design changes. Reduce the burden of knowing **view** coupling when adding new features.
 

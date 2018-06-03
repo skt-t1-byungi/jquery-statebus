@@ -135,19 +135,19 @@ $('#counter > button.increment').click(function(){
 ```
 **view**에서 **state**를 얻습니다. 
 
-<div style="text-align:center"><img src="./assets/1.png"></div>
+<p align="center"><img src="./assets/1.png"></p>
 
 이것을 도형화한 것입니다.
 
-<div style="text-align:center"><img src="./assets/2.png"></div>
+<p align="center"><img src="./assets/2.png"></p>
 
 기능이 늘어날수록 복잡한 네트워크를 만듭니다. 디자인변경, 기능추가가 힘들어집니다.
 
-<div style="text-align:center"><img src="./assets/3.png"></div>
+<p align="center"><img src="./assets/3.png"></p>
 
 jquery-statebus로 **state**와 **view**를 분리하면 이러한 복잡성을 개선할 수 있습니다.
 
-<div style="text-align:center"><img src="./assets/4.png"></div>
+<p align="center"><img src="./assets/4.png"></p>
 
 **state**를 메모리에 있는 독립된 객체에서 얻기 때문에 디자인 변경으로 다른 자바스크립트 코드가 망가지는 일을 최소화할 수 있습니다. 새로운 기능을 추가할 때도 **view** 역할까지 파악해야 하는 부담이 줄어듭니다.
 
