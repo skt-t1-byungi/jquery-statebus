@@ -63,7 +63,7 @@ var counter = $.statebus('counter', {  // namespace is 'counter'.
 // counter.state.value  == 1
 // $.statebus.state.counter.value  == 1
 ```
-`$ .statebus.state [namespace]` to get another local state.
+`$.statebus.state[namespace]` to get another local state.
 
 ### Action
 ```js
@@ -110,7 +110,7 @@ counter.on('increment', function view(state, prevState){
   }
 })
 ```
-jquery.statebus has no magic. Subscribe to the **action** associated with the **view**. Ccompare with the previous state.
+jquery.statebus has no magic. Subscribe to the **action** associated with the **view**. Compare with the previous state.
 
 #### Multiple
 ```js
