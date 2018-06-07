@@ -4,7 +4,7 @@ require('./jquery-statebus');
 
 const $$ = $.statebus
 
-const testBus = name => $$(name,{
+const testBus = (name, initEvents = false) => $$(name,{
   state: {
     value: 1
   },
@@ -16,7 +16,7 @@ const testBus = name => $$(name,{
       this.action.increment(1)
     }
   }
-})
+}, initEvents)
 
 test('action to update state', t =>{
   const bus = testBus('test1')
@@ -65,7 +65,7 @@ test('listener parameters (state, prevState, action)', t =>{
   // scenario : act.incOne -> act.inc -> on.inc(1) -> on.incOne -> act.inc -> on.inc(2)
   let hits = 0
   bus.on('increment', _ => hits++)
-  bus.on('incrementOne', (_, __, action) => action.increment(1))
+  bus.on('incrementOne', () => bus.action.increment(1))
   bus.action.incrementOne() 
 
   t.is(hits, 2)
@@ -79,4 +79,48 @@ test('multiple(array) subscribe', t =>{
   bus.action.incrementOne() 
 
   t.is(hits, 2)
+})
+
+test('multiple(array) subscribe at global', t =>{
+  const bus1 = testBus('test5')
+  const bus2 = testBus('test6')
+  
+  let hits = 0
+  $.statebus.on(['test5.increment', 'test6.increment'], _ => hits++)
+  
+  bus1.action.increment(1)
+  t.is(hits, 1)
+
+  bus2.action.increment(1)
+  t.is(hits, 2)
+})
+
+test('even if not exists, can subscribe', t =>{
+  let hits = 0
+  $.statebus.on(['test7.increment'], _ => hits++)
+
+  const bus = testBus('test7')
+  bus.action.increment(1)
+  
+  t.is(hits, 1)
+})
+
+test('removeListeners', t =>{
+  let hits = 0
+  $.statebus.on(['test8.increment'], _ => hits++)
+
+  const bus = testBus('test8', true)
+  bus.action.increment(1)
+  
+  t.is(hits, 0)
+})
+
+test('in listener, get arguments', t =>{
+  const bus = testBus('test9')
+  let capture
+
+  bus.on('increment', (_, __, [v])=> (capture = v))
+  bus.action.increment(123)
+
+  t.is(capture, 123)
 })

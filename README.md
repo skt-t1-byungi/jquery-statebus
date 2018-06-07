@@ -112,6 +112,15 @@ counter.on('increment', function view(state, prevState){
 ```
 jquery.statebus has no magic. Subscribe to the **action** associated with the **view**. Compare with the previous state.
 
+#### Arguments
+```js
+counter.on('increment', function view(state, prevState, args){
+  var amount = args[0]
+  ...
+})
+```
+If necessary, can get arguments of the action.
+
 #### Multiple
 ```js
 // space

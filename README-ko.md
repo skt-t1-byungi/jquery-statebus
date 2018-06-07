@@ -111,6 +111,15 @@ counter.on('increment', function view(state, prevState){
 ```
 jquery.statebus는 마법이 없습니다. 직접 **view**와 연관된 **action**을 구독하고 이전 상태와 비교해야 합니다.
 
+#### Arguments
+```js
+counter.on('increment', function view(state, prevState, args){
+  var amount = args[0]
+  ...
+})
+```
+필요하다면, 액션의 인자를 얻을 수도 있습니다.
+
 #### Multiple
 ```js
 // space

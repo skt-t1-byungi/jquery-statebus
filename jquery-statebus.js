@@ -11,13 +11,13 @@
   $.statebus = $.extend(statebus, globalBus, { on: $.proxy(on, null, globalBus, null) })
 
   // Create a bus.
-  function statebus (namespace, definition) {
+  function statebus (namespace, definition, removeListeners) {
     if (typeof namespace !== 'string') {
       throw new TypeError('Expected type of "string", but "' + typeof namespace + '".')
     }
 
     // if already, remove event listeners
-    emitter.off(namespace)
+    if (removeListeners) emitter.off(namespace)
 
     // bus instance
     var localState = globalState[namespace] = {}
@@ -34,12 +34,13 @@
     $.each(definition.action || {}, function (actName, func) {
       localAction[actName] = function () {
         var prevState = clone(localState)
-        $.extend(localState, clone(func.apply(localBus, arguments)))
-        emitter.trigger(namespace + '.' + actName, [prevState])
+        var args = toArray(arguments)
+        $.extend(localState, clone(func.apply(localBus, args)))
+        emitter.trigger(namespace + '.' + actName, [prevState, args])
       }
     })
 
-    // returns with `on()`, `render()`
+    // returns with `on()`
     return $.extend({ on: $.proxy(on, null, localBus, namespace) }, localBus)
   }
 
@@ -47,17 +48,21 @@
     return state && typeof state === 'object' ? JSON.parse(JSON.stringify(state)) : {}
   }
 
+  function toArray (args) {
+    return Array.prototype.slice.call(args)
+  }
+
   function on (bus, namespace, evtName, listener, immediately) {
-    if (immediately) listener(bus.state, null, bus.action)
+    if (immediately) listener(bus.state, null, [])
 
     if (namespace) {
       evtName = $.map(evtName.split ? evtName.split(/\s+/) : evtName, function (name) {
         return namespace + '.' + name
-      }).join(' ')
+      })
     }
 
-    emitter.on(evtName, function (_, prevState) {
-      listener(bus.state, prevState, bus.action)
+    emitter.on(evtName.join ? evtName.join(' ') : evtName, function (_, prevState, args) {
+      listener(bus.state, prevState, args)
     })
   }
 }))
