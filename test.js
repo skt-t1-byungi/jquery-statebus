@@ -4,7 +4,7 @@ require('./jquery-statebus');
 
 const $$ = $.statebus
 
-const testBus = (name, initEvents = false) => $$(name,{
+const testBus = (name, extend = false) => $$(name,{
   state: {
     value: 1
   },
@@ -16,7 +16,7 @@ const testBus = (name, initEvents = false) => $$(name,{
       this.action.increment(1)
     }
   }
-}, initEvents)
+}, extend)
 
 test('action to update state', t =>{
   const bus = testBus('test1')
@@ -105,14 +105,59 @@ test('even if not exists, can subscribe', t =>{
   t.is(hits, 1)
 })
 
-test('removeListeners', t =>{
-  let hits = 0
-  $.statebus.on(['test8.increment'], _ => hits++)
-
-  const bus = testBus('test8', true)
-  bus.action.increment(1)
+test('override', t =>{
+  let bus = $.statebus('extend', {
+    state: {
+      val1 : 1
+    },
+    action:{
+      m1(){},
+      m2(){}
+    }
+  })
   
-  t.is(hits, 0)
+  let hits1 = 0
+  bus.on('m2', _ => hits1++)
+  
+  bus.action.m2()
+  t.is(hits1, 1)
+
+  bus = $.statebus('extend', {
+    state: {
+      val2 : 2
+    },
+    action:{
+      m2(){}
+    }
+  }, true)
+  
+  let hits2 = 0
+  bus.on('m2', _ => hits2++)
+
+  t.deepEqual(bus.state, {val2: 2})
+  t.falsy(bus.action.m1)
+  t.truthy(bus.action.m2)
+
+  bus.action.m2()
+  t.is(hits1, 1)
+  t.is(hits2, 1)
+
+  bus = $.statebus('extend', {
+    state: {
+      val3 : 3
+    },
+    action:{
+      m3(){}
+    }
+  })
+  
+  t.deepEqual(bus.state, {val2: 2, val3: 3})
+  t.truthy(bus.action.m2)
+  t.truthy(bus.action.m3)
+
+  bus.action.m2()
+  t.is(hits1, 1)
+  t.is(hits2, 2)
 })
 
 test('in listener, get arguments', t =>{

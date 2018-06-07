@@ -145,6 +145,31 @@ counter.on('increment', function (state, prevState){
 ```
 3번째 인자가 true면, render 함수를 즉시 실행합니다. **prevState**의 null여부로 함수 안에서 초기실행인지 판단할 수 있습니다.
 
+### Override
+```js
+$.statebus('test', {
+  state: { v1: 1 }
+})
+var re = $.statebus('test', {
+  state: { v2: 2 }
+})
+
+console.log( re.state ) // {v1: 1, v2: 2}
+```
+다시 재정의되면 기존 정의를 유지하며 확장합니다.
+
+```js
+$.statebus('test', {
+  state: { v1: 1 }
+})
+var re = $.statebus('test', {
+  state: { v2: 2 }
+}, true) // Look here.
+
+console.log( re.state ) // {v2: 2}
+```
+오버라이드 옵션이 true면, 이전 정의(상태, 액션, 이벤트 리스너) 모두를 지우고 새로 정의합니다.
+
 ## Why?
 jquery-statebus는 **view**와 **state**를 분리하는 게 목적입니다. 아래는 **view**와 **state**가 강하게 결합된 코드입니다.
 

@@ -11,17 +11,13 @@
   $.statebus = $.extend(statebus, globalBus, { on: $.proxy(on, null, globalBus, null) })
 
   // Create a bus.
-  function statebus (namespace, definition, removeListeners) {
-    if (typeof namespace !== 'string') {
-      throw new TypeError('Expected type of "string", but "' + typeof namespace + '".')
-    }
-
-    // if already, remove event listeners
-    if (removeListeners) emitter.off(namespace)
+  function statebus (namespace, definition, override) {
+    if (override) emitter.off(namespace)
 
     // bus instance
-    var localState = globalState[namespace] = {}
-    var localAction = globalAction[namespace] = {}
+    var localState = !override && globalState[namespace] ? globalState[namespace] : (globalState[namespace] = {})
+    var localAction = !override && globalAction[namespace] ? globalAction[namespace] : (globalAction[namespace] = {})
+
     var localBus = {
       state: localState,
       action: localAction

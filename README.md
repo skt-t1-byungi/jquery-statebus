@@ -147,6 +147,31 @@ counter.on('increment', function (state, prevState){
 
 If third argument is true, render function is call immediately. Whether **prevState** is null or not can judged initial call in the function.
 
+### Override
+```js
+$.statebus('test', {
+  state: { v1: 1 }
+})
+var re = $.statebus('test', {
+  state: { v2: 2 }
+})
+
+console.log( re.state ) // {v1: 1, v2: 2}
+```
+If redefined, can be extended.
+
+```js
+$.statebus('test', {
+  state: { v1: 1 }
+})
+var re = $.statebus('test', {
+  state: { v2: 2 }
+}, true) // Look here.
+
+console.log( re.state ) // {v2: 2}
+```
+If override option is true, previous definition(state, action and listeners) is cleared.
+
 ## Why?
 Purpose of jquery-statebus is to decoupling **view** and **state**. Below is a strong coupling example of **view** and **state**.
 
