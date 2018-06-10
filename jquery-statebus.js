@@ -7,10 +7,6 @@
   var emitter = $({})
 
   var globalBus = {state: {}, action: {}, prevState: {}}
-  // var globalState = globalBus.state = {}
-  // var globalAction = globalBus.action = {}
-  // var globalPrevState = globalBus.prevState = {}
-
   $.statebus = extend(statebus, globalBus, {on: $.proxy(on, null, globalBus, null)})
 
   // Create a bus.
