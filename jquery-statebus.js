@@ -3,49 +3,53 @@
     : typeof define === 'function' && define.amd ? define(['jquery'], factory)
       : (factory(global.jQuery || global.$))
 }(window || this, function ($) {
-  var globalState = {}
-  var globalAction = {}
-  var globalBus = {state: globalState, action: globalAction}
+  var extend = $.extend
   var emitter = $({})
 
-  $.statebus = $.extend(statebus, globalBus, { on: $.proxy(on, null, globalBus, null) })
+  var globalBus = {state: {}, action: {}, prevState: {}}
+  // var globalState = globalBus.state = {}
+  // var globalAction = globalBus.action = {}
+  // var globalPrevState = globalBus.prevState = {}
+
+  $.statebus = extend(statebus, globalBus, {on: $.proxy(on, null, globalBus, null)})
 
   // Create a bus.
   function statebus (namespace, definition, override) {
-    if (override) emitter.off(namespace)
-
     // bus instance
-    var localState = !override && globalState[namespace] ? globalState[namespace] : (globalState[namespace] = {})
-    var localAction = !override && globalAction[namespace] ? globalAction[namespace] : (globalAction[namespace] = {})
+    var localBus = {state: {}, action: {}, prevState: null}
 
-    var localBus = {
-      state: localState,
-      action: localAction
+    if (override) {
+      emitter.off(namespace)
+    } else {
+      extend(localBus.state, globalBus.state[namespace])
+      extend(localBus.action, globalBus.action[namespace])
     }
 
     // Register state.
-    $.extend(localState, clone(definition.state))
+    extend(localBus.state, safeCopy(definition.state))
 
     // Create actions.
     $.each(definition.action || {}, function (actName, func) {
-      localAction[actName] = function () {
-        var prevState = clone(localState)
-        var args = toArray(arguments)
-        $.extend(localState, clone(func.apply(localBus, args)))
-        emitter.trigger(namespace + '.' + actName, [prevState, args])
+      localBus.action[actName] = function () {
+        var args = [].slice.call(arguments)
+        var prevState = localBus.state
+        var willState = safeCopy(func.apply({state: localBus.state, action: localBus.action}, args))
+
+        globalBus.state[namespace] = localBus.state = extend({}, localBus.state, willState)
+        globalBus.prevState[namespace] = localBus.prevState = prevState
+
+        emitter.trigger(namespace + '.' + actName, [args])
       }
     })
 
-    // returns with `on()`
-    return $.extend({ on: $.proxy(on, null, localBus, namespace) }, localBus)
+    globalBus.state[namespace] = localBus.state
+    globalBus.action[namespace] = localBus.action
+
+    return extend(localBus, {on: $.proxy(on, null, localBus, namespace)})
   }
 
-  function clone (state) {
+  function safeCopy (state) {
     return state && typeof state === 'object' ? JSON.parse(JSON.stringify(state)) : {}
-  }
-
-  function toArray (args) {
-    return Array.prototype.slice.call(args)
   }
 
   function on (bus, namespace, evtName, listener, immediately) {
@@ -57,8 +61,8 @@
       })
     }
 
-    emitter.on(evtName.join ? evtName.join(' ') : evtName, function (_, prevState, args) {
-      listener(bus.state, prevState, args)
+    emitter.on(evtName.join ? evtName.join(' ') : evtName, function (_, args) {
+      listener(bus.state, bus.prevState, args)
     })
   }
 }))
