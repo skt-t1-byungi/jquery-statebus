@@ -4,6 +4,7 @@
       : (factory(global.jQuery || global.$))
 }(window || this, function ($) {
   var extend = $.extend
+  var isPlainObject = $.isPlainObject
   var emitter = $({})
 
   var globalBus = {state: {}, action: {}, prevState: {}}
@@ -22,19 +23,24 @@
     }
 
     // Register state.
-    extend(localBus.state, safeCopy(definition.state))
+    if (isPlainObject(definition.state)) {
+      extend(localBus.state, copy(definition.state))
+    }
 
     // Create actions.
     $.each(definition.action || {}, function (actName, func) {
       localBus.action[actName] = function () {
         var args = [].slice.call(arguments)
         var prevState = localBus.state
-        var willState = safeCopy(func.apply({state: localBus.state, action: localBus.action}, args))
+        var willState = func.apply({state: localBus.state, action: localBus.action}, args)
 
-        globalBus.state[namespace] = localBus.state = extend({}, localBus.state, willState)
-        globalBus.prevState[namespace] = localBus.prevState = prevState
+        if (isPlainObject(willState)) {
+          globalBus.state[namespace] = localBus.state = extend({}, localBus.state, copy(willState))
+          globalBus.prevState[namespace] = localBus.prevState = prevState
+        }
 
         emitter.trigger(namespace + '.' + actName, [args])
+        return willState
       }
     })
 
@@ -44,8 +50,8 @@
     return extend(localBus, {on: $.proxy(on, null, localBus, namespace)})
   }
 
-  function safeCopy (state) {
-    return state && typeof state === 'object' ? JSON.parse(JSON.stringify(state)) : {}
+  function copy (state) {
+    return JSON.parse(JSON.stringify(state))
   }
 
   function on (bus, namespace, evtName, listener, immediately) {

@@ -14,6 +14,11 @@ const testBus = (name, extend = false) => $$(name,{
     },
     incrementOne(){
       this.action.increment(1)
+    },
+    delayIncrement(v, sec){
+      return new Promise((resolve, reject)=>{
+        setTimeout(()=> (this.action.increment(v), resolve()), sec * 1000);
+      })
     }
   }
 }, extend)
@@ -168,4 +173,14 @@ test('in listener, get arguments', t =>{
   bus.action.increment(123)
 
   t.is(capture, 123)
+})
+
+test('action returns value', async t =>{
+  const bus = testBus('test10')
+
+  const p = bus.action.delayIncrement(2)
+  t.is(bus.state.value, 1)
+
+  await p
+  t.is(bus.state.value, 3)
 })

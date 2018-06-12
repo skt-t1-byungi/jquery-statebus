@@ -26,18 +26,10 @@
   "license": "MIT",
   "scripts": {
     "build": "uglifyjs jquery-statebus.js -c -m --ie8 -o jquery-statebus.min.js",
-    "prepublishOnly": "npm run size && npm run test && npm run build",
-    "prepush": "npm run size && npm run test && npm run build",
-    "test": "ava",
-    "size": "size-limit"
+    "prepublishOnly": "npm run test && npm run build",
+    "prepush": "npm run test && npm run build",
+    "test": "ava"
   },
-  "size-limit": [
-    {
-      "path": "jquery-statebus.min.js",
-      "webpack": false,
-      "limit": "0.5 KB"
-    }
-  ],
   "eslintConfig": {
     "extends": "byungi/old",
     "globals": {
@@ -58,7 +50,6 @@
     "eslint-config-byungi": "^0.0.16",
     "husky": "^0.14.3",
     "jquery": "^3.3.1",
-    "size-limit": "^0.18.2",
     "uglify-js": "^3.3.27"
   },
   "ava": {
