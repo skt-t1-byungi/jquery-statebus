@@ -46,14 +46,14 @@
     // create helpers
     $.each(definition.helper || {}, function (helperName, func) {
       localBus.helper[helperName] = function () {
-        return func.apply(localBus.state, [localBus].concat(toArray(arguments)))
+        return func.apply(localBus.state, [localBus].concat($.makeArray(arguments)))
       }
     })
 
     // create actions
     $.each(definition.action || {}, function (actName, func) {
       localBus.action[actName] = function () {
-        var args = toArray(arguments)
+        var args = $.makeArray(arguments)
         var prevState = localBus.state
         var willState = func.apply(localBus.state, [localBus].concat(args))
 
@@ -77,10 +77,6 @@
 
   function copy (state) {
     return JSON.parse(JSON.stringify(state))
-  }
-
-  function toArray (likeArray) {
-    return Array.prototype.slice.call(likeArray)
   }
 
   function on (bus, namespace, evtName, listener, immediately) {
