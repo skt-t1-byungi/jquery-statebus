@@ -1,5 +1,5 @@
 # jquery-statebus
-🚍 0.5KB Small State + EventBus for jQuery
+🚍 Small State + EventBus for jQuery
 
 ## Example
 ```js
@@ -8,11 +8,11 @@ var counter = $.statebus('counter', {
     value: 0
   },
   action: {
-    increment: function(number){
-      return {value: this.state.value + number}
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number}
     },
-    decrement: function(number){
-      return {value: this.state.value - number}
+    decrement: function(ctx, number){
+      return {value: ctx.state.value - number}
     }
   }
 })
@@ -69,8 +69,8 @@ var counter = $.statebus('counter', {  // namespace는 'counter'가 됩니다.
 var counter = $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(number){
-      return {value: this.state.value + number} 
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number} 
     }
   }
 })
@@ -85,11 +85,11 @@ action의 반환결과로 상태를 바꿉니다. (`$.extend` 함수를 사용�
 $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(number){
-      return {value: this.state.value + number} 
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number} 
     },
-    delayIncrement: function(number, sec){
-      setTimeout(this.action.increment, sec * 1000, number)
+    delayIncrement: function(ctx, number, sec){
+      setTimeout(ctx.action.increment, sec * 1000, number)
     }
   }
 })
@@ -113,8 +113,8 @@ jquery.statebus는 마법이 없습니다. 직접 **view**와 연관된 **action
 
 #### Arguments
 ```js
-counter.on('increment', function view(state, prevState, args){
-  var amount = args[0]
+counter.on('increment', function view(state, prevState, ctx){
+  var amount = ctx.args[0]
   ...
 })
 ```

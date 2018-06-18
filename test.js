@@ -9,15 +9,15 @@ const testBus = (name, extend = false) => $$(name,{
     value: 1
   },
   action: {
-    increment(v){ 
-      return {value: this.state.value + v} 
+    increment(ctx, v){ 
+      return {value: ctx.state.value + v} 
     },
-    incrementOne(){
-      this.action.increment(1)
+    incrementOne(ctx){
+      ctx.action.increment(1)
     },
-    delayIncrement(v, sec){
-      return new Promise((resolve, reject)=>{
-        setTimeout(()=> (this.action.increment(v), resolve()), sec * 1000);
+    delayIncrement(ctx, v, sec){
+      return new Promise((resolve)=>{
+        setTimeout(()=> (ctx.action.increment(v), resolve()), sec * 1000);
       })
     }
   }
@@ -169,7 +169,7 @@ test('in listener, get arguments', t =>{
   const bus = testBus('test9')
   let capture
 
-  bus.on('increment', (_, __, [v])=> (capture = v))
+  bus.on('increment', (_, __, {args:[v]})=> (capture = v))
   bus.action.increment(123)
 
   t.is(capture, 123)
@@ -183,4 +183,74 @@ test('action returns value', async t =>{
 
   await p
   t.is(bus.state.value, 3)
+})
+
+test('unsubscribe (local)', t =>{
+  const bus = testBus('test11')
+  
+  let hits = 0
+  const off = bus.on('increment', ()=> hits++)
+  
+  bus.action.increment(1)
+  t.is(hits, 1)
+  bus.action.increment(1)
+  t.is(hits, 2)
+  off()
+  bus.action.increment(1)
+  t.is(hits, 2)
+  bus.action.increment(1)
+  t.is(hits, 2)
+})
+
+test('unsubscribe (global)', t =>{
+  const bus = testBus('test12')
+  
+  let hits = 0
+  const off = $.statebus.on('test12.increment', ()=> hits++)
+  
+  bus.action.increment(1)
+  t.is(hits, 1)
+  bus.action.increment(1)
+  t.is(hits, 2)
+  off()
+  bus.action.increment(1)
+  t.is(hits, 2)
+  bus.action.increment(1)
+  t.is(hits, 2)
+})
+
+
+test('all listener', t =>{
+  const bus = testBus('test13')
+  let captured
+  bus.on('all', (_, __, {actionName})=> (captured = actionName))
+  bus.action.increment(1)
+  t.is(captured, 'increment')
+  bus.action.incrementOne()
+  t.is(captured, 'incrementOne')
+})
+
+test('helper', t =>{
+  const bus = $.statebus('helperTest', {
+    state: {
+      value: 1
+    },
+    action: {
+      add(ctx, v){ 
+        return {value : ctx.helper.add(v)} 
+      }
+    },
+    helper: {
+      add(ctx, v){
+        return ctx.state.value + v // using ctx
+      },
+      product(_, v){
+        return this.value * v //using this
+      }
+    }
+  })
+
+  bus.action.add(2)
+  t.is(bus.state.value, 3)
+  t.is(bus.helper.product(2), 6)
 })

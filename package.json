@@ -1,6 +1,6 @@
 {
   "name": "jquery-statebus",
-  "description": "0.5KB Small State + EventBus for jQuery",
+  "description": "Small State + EventBus for jQuery",
   "version": "0.1.2",
   "author": {
     "name": "skt-t1-byungi",

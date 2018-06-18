@@ -1,5 +1,5 @@
 # jquery-statebus
-🚍 0.5KB Small State + EventBus for jQuery
+🚍 Small State + EventBus for jQuery
 
 ## Example
 ```js
@@ -8,11 +8,11 @@ var counter = $.statebus('counter', {
     value: 0
   },
   action: {
-    increment: function(number){
-      return {value: this.state.value + number}
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number}
     },
-    decrement: function(number){
-      return {value: this.state.value - number}
+    decrement: function(ctx, number){
+      return {value: ctx.state.value - number}
     }
   }
 })
@@ -70,8 +70,8 @@ var counter = $.statebus('counter', {  // namespace is 'counter'.
 var counter = $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(number){
-      return {value: this.state.value + number} 
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number} 
     }
   }
 })
@@ -79,18 +79,18 @@ var counter = $.statebus('counter', {
 counter.action.increment(1) // "counter.state.value" to be 2
 $.statebus.action.counter.increment(2) // "counter.state.value" to be 4
 ```
-Updates state to the returned by action. (using `$ .extend`.) In action function, `this` is an object that has the `state`,` action` property.
+Updates state to the returned by action. (using `$ .extend`.)
 
 #### Action in action
 ```js
 $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(number){
-      return {value: this.state.value + number} 
+    increment: function(ctx, number){
+      return {value: ctx.state.value + number} 
     },
-    delayIncrement: function(number, sec){
-      setTimeout(this.action.increment, sec * 1000, number)
+    delayIncrement: function(ctx, number, sec){
+      setTimeout(ctx.action.increment, sec * 1000, number)
     }
   }
 })
@@ -114,8 +114,8 @@ jquery.statebus has no magic. Subscribe to the **action** associated with the **
 
 #### Arguments
 ```js
-counter.on('increment', function view(state, prevState, args){
-  var amount = args[0]
+counter.on('increment', function view(state, prevState, ctx){
+  var amount = ctx.args[0]
   ...
 })
 ```
