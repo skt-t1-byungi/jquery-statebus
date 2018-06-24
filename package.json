@@ -1,6 +1,6 @@
 {
   "name": "jquery-statebus",
-  "description": "Small State Management library for jQuery",
+  "description": "Small state management library for jQuery",
   "version": "0.2.1",
   "author": {
     "name": "skt-t1-byungi",
@@ -9,9 +9,11 @@
   "keywords": [
     "jquery",
     "state",
+    "management",
     "eventbus",
     "model",
-    "mvc"
+    "mvc",
+    "backbone"
   ],
   "main": "jquery-statebus.js",
   "unpkg": "jquery-statebus.min.js",

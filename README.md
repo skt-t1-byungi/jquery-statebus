@@ -1,5 +1,5 @@
 # jquery-statebus
-🚍 Small State Management library for jQuery
+🚍 Small state management library for jQuery
 
 ## Example
 ```js
