@@ -10,7 +10,6 @@
   var globalBus = {
     state: {},
     action: {},
-    helper: {},
     prevState: {}
   }
 
@@ -20,42 +19,17 @@
     { on: $.proxy(on, null, globalBus, null) }
   )
 
-  // Create a bus.
+  // constructor
   function statebus (namespace, definition, override) {
-    // bus instance
-    var localBus = {
-      state: {},
-      action: {},
-      helper: {},
-      prevState: null
-    }
-
-    if (override) {
-      emitter.off(namespace)
-    } else {
-      extend(localBus.state, globalBus.state[namespace])
-      extend(localBus.action, globalBus.action[namespace])
-      extend(localBus.helper, globalBus.helper[namespace])
-    }
-
-    // Register state.
-    if (isPlainObject(definition.state)) {
-      extend(localBus.state, copy(definition.state))
-    }
-
-    // create helpers
-    $.each(definition.helper || {}, function (helperName, func) {
-      localBus.helper[helperName] = function () {
-        return func.apply(localBus.state, [localBus].concat($.makeArray(arguments)))
-      }
-    })
+    var localBus = extend({ state: {}, action: {}, prevState: null }, definition)
+    localBus.state = copy(localBus.state)
 
     // create actions
-    $.each(definition.action || {}, function (actName, func) {
+    $.each(localBus.action, function (actName, func) {
       localBus.action[actName] = function () {
         var args = $.makeArray(arguments)
         var prevState = localBus.state
-        var willState = func.apply(localBus.state, [localBus].concat(args))
+        var willState = func.apply(localBus, args)
 
         if (isPlainObject(willState)) {
           globalBus.state[namespace] = localBus.state = extend({}, localBus.state, copy(willState))
@@ -64,13 +38,20 @@
 
         emitter.trigger(namespace + '.' + actName, [actName, args])
         emitter.trigger(namespace + '.all', [actName, args])
+
         return willState
       }
     })
 
+    if (override) {
+      emitter.off(namespace)
+    } else {
+      extend(localBus.state, globalBus.state[namespace])
+      extend(localBus.action, globalBus.action[namespace])
+    }
+
     globalBus.state[namespace] = localBus.state
     globalBus.action[namespace] = localBus.action
-    globalBus.helper[namespace] = localBus.helper
 
     return extend(localBus, {on: $.proxy(on, null, localBus, namespace)})
   }
@@ -80,7 +61,7 @@
   }
 
   function on (bus, namespace, evtName, listener, immediately) {
-    if (immediately) listener(bus.state, null, {helper: bus.helper})
+    if (immediately) listener(bus, {immediately: true})
 
     if (namespace) {
       evtName = $.map(evtName.split ? evtName.split(/\s+/) : evtName, function (name) {
@@ -89,7 +70,7 @@
     }
 
     var wrapFunc = function (_, actName, args) {
-      listener(bus.state, bus.prevState, {actionName: actName, args: args, helper: bus.helper})
+      listener(bus, {actionName: actName, args: args, immediately: false})
     }
 
     emitter.on(evtName = evtName.join ? evtName.join(' ') : evtName, wrapFunc)

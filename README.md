@@ -1,5 +1,5 @@
 # jquery-statebus
-🚍 Small State + EventBus for jQuery
+🚍 Small State Management library for jQuery
 
 ## Example
 ```js
@@ -8,35 +8,34 @@ var counter = $.statebus('counter', {
     value: 0
   },
   action: {
-    increment: function(ctx, number){
-      return {value: ctx.state.value + number}
+    increment: function(number){
+      return {value: this.state.value + number}
     },
-    decrement: function(ctx, number){
-      return {value: ctx.state.value - number}
+    decrement: function(number){
+      return {value: this.state.value - number}
     }
   }
 })
 
 var $el = $('.counter')
-$el.on('click', '[data-do-counter-increment]', function(){
+$el.on('click', '[data-counter="increment"]', function(counter){
   counter.action.increment(1)
 })
-$el.on('click', '[data-do-counter-decrement]', function(){
+$el.on('click', '[data-counter="decrement"]', function(counter){
   counter.action.decrement(1)
 })
 
-counter.on('increment decrement', function(state){
-  $el.find('.txt').text(state.value)
+counter.on('increment decrement', function(counter){
+  $el.find('.txt').text(counter.state.value)
 })
 ```
 
 ## What?
-"jquery-statebus" provides a very simple pattern for decoupling states from **views** (written in jquery).
-
-- reduces JavaScript crash when design changes.
-- easy to extend new feature.
-- easier than backbone.
-- small and light.
+jquery-statebus는 **View**(jquery로 작성된)에서 상태를 분리하는 아주 간단한 패턴을 제공합니다. 
+- 디자인이 바뀔 때 자바스크립트가 망가지는 것을 최소화합니다.
+- 확장이 편합니다.
+- backbone 보다 더 쉽습니다.
+- 작고 가볍습니다.
 
 ## Install
 ```sh
@@ -53,25 +52,24 @@ require('jquery-statebus');
 
 ## How to use
 ### State
-Defines a state with namespace.
-
+네임스페이스로 **state**를 정의합니다.
 ```js
-var counter = $.statebus('counter', {  // namespace is 'counter'.
+var counter = $.statebus('counter', {  // namespace는 'counter'가 됩니다.
   state: { value: 1 }
 })
 
 // counter.state.value  == 1
 // $.statebus.state.counter.value  == 1
 ```
-`$.statebus.state[namespace]` to get another local state.
+`$.statebus.state[namespace]`로 다른 지역state를 가져올 수 있습니다.
 
 ### Action
 ```js
 var counter = $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(ctx, number){
-      return {value: ctx.state.value + number} 
+    increment: function(number){
+      return {value: this.state.value + number} 
     }
   }
 })
@@ -79,18 +77,19 @@ var counter = $.statebus('counter', {
 counter.action.increment(1) // "counter.state.value" to be 2
 $.statebus.action.counter.increment(2) // "counter.state.value" to be 4
 ```
-Updates state to the returned by action. (using `$ .extend`.)
+action의 반환결과로 상태를 바꿉니다. (`$.extend` 함수를 사용합니다.) 
+action 함수에서 `this`는  statebus 객체와 동일합니다.
 
 #### Action in action
 ```js
 $.statebus('counter', { 
   state: { value: 1 },
   action:{
-    increment: function(ctx, number){
-      return {value: ctx.state.value + number} 
+    increment: function(number){
+      return {value: this.state.value + number} 
     },
-    delayIncrement: function(ctx, number, sec){
-      setTimeout(ctx.action.increment, sec * 1000, number)
+    delayIncrement: function(number, sec){
+      setTimeout(this.action.increment, sec * 1000, number)
     }
   }
 })
@@ -104,48 +103,50 @@ console.log( counter.state.value ) // 2
 
 ### On(action, render [, immediately])
 ```js
-counter.on('increment', function view(state, prevState){
-  if(state.value !== prevState.value){
-    $display.text(state.value)
+counter.on('increment', function(counter){
+  if(counter.state.value !== counter.prevState.value){
+    $display.text(counter.state.value)
   }
 })
 ```
-jquery.statebus has no magic. Subscribe to the **action** associated with the **view**. Compare with the previous state.
+jquery.statebus는 마법이 없습니다. 
+직접 **View**와 연관된 **Action**을 구독하고 이전 상태와 비교해야 합니다.
 
 #### Arguments
 ```js
-counter.on('increment', function view(state, prevState, ctx){
+counter.on('increment', function(counter, ctx){
   var amount = ctx.args[0]
   ...
 })
 ```
-If necessary, can get arguments of the action.
+필요하다면 액션의 인자를 얻을 수도 있습니다.
 
-#### Multiple
+#### Multiple subscription
 ```js
-// space
+// using space
 counter.on('increment decrement', view)
 
-// array
+// using array
 counter.on(['increment', 'decrement'], view)
 ```
-Actions that share the same **view** change exist. You can subscribe to multiple actions at once with `space`, or` array`.
+같은 **View** 변경을 공유하는 **Action**들은 언제나 존재합니다. 
+`space`, 또는 `array`로 한번에 여러 **Action**에 대해서 구독할 수 있습니다.
 
-#### Global
+#### Global subscription
 ```js
 $.statebus.on(['counter.increment', 'other.update'], view)
 ```
-Changes in different states can be rendered using the same **view** function.
+네임스페이스를 사용해서 서로 다른 지역 상태에 대한 변경을 같은 리스너로 구독할 수 있습니다.
 
 #### Immediately
 ```js
-counter.on('increment', function (state, prevState){
-  if(prevState === null) initView()
-  $display.text(state.value)
+counter.on('increment', function (counter, ctx){
+  if(ctx.immediately) initView()
+  $display.text(counter.state.value)
 }, true)
 ```
-
-If third argument is true, render function is call immediately. Whether **prevState** is null or not can judged initial call in the function.
+3번째 인자가 true면 함수를 즉시 실행합니다. 
+**ctx.immediately**로 초기실행인지 판단할 수 있습니다.
 
 ### Override
 ```js
@@ -158,7 +159,7 @@ var re = $.statebus('test', {
 
 console.log( re.state ) // {v1: 1, v2: 2}
 ```
-If redefined, can be extended.
+다시 재정의되면 이전 정의를 유지하며 확장합니다.
 
 ```js
 $.statebus('test', {
@@ -170,10 +171,11 @@ var re = $.statebus('test', {
 
 console.log( re.state ) // {v2: 2}
 ```
-If override option is true, previous definition(state, action and listeners) is cleared.
+오버라이드 옵션이 true면, 이전 정의(상태, 액션, 이벤트 리스너) 모두를 지우고 새로 정의합니다.
 
 ## Why?
-Purpose of jquery-statebus is to decoupling **view** and **state**. Below is a strong coupling example of **view** and **state**.
+jquery-statebus는 **View**와 **State**를 분리하는 게 목적입니다. 
+아래는 **View**와 **State**가 강하게 결합된 코드입니다.
 
 ```js
 $('#counter > button.increment').click(function(){
@@ -182,51 +184,54 @@ $('#counter > button.increment').click(function(){
   $display.text(number + 1)
 })
 ```
-**state** is from **view**.
+**View**에서 **State**를 얻습니다. 
 
 <p align="center"><img src="./assets/1.png"></p>
 
-It is like this diagram.
+이것을 도형화한 것입니다.
 
 <p align="center"><img src="./assets/2.png"></p>
 
-Make increasingly complex networks. Design changes and extend new feature become difficult.
+기능이 늘어날수록 복잡한 네트워크를 만듭니다. 디자인변경, 기능추가가 힘들어집니다.
 
 <p align="center"><img src="./assets/3.png"></p>
 
-Decoupling **state** and **view** with jquery-statebus can improve this complexity.
+jquery-statebus로 **State**와 **View**를 분리하면 이러한 복잡성을 개선할 수 있습니다.
 
 <p align="center"><img src="./assets/4.png"></p>
 
-**state** gets it from an independent object in memory, which reduces the risk of other JavaScript codes being broken by **view** design changes. Reduce the burden of knowing **view** coupling when adding new features.
+**State**를 메모리에 있는 독립된 객체에서 얻기 때문에 디자인 변경으로 다른 자바스크립트 코드가 망가지는 일을 최소화할 수 있습니다. 
+새로운 기능을 추가할 때도 **View** 역할까지 파악해야 하는 부담이 줄어듭니다.
 
 ## Tip
 ### Use data attribute.
 ```js
 // bad
 $el.find('button.increment').click(function(){
-  var amount = $(this).data('do-counter-increment');
-  counter.action.increment(1)
-})
-
-counter.on('increment', function(state){
-  $el.find('span.display').text(state.value)
-})
-
-
-//good
-$el.on('click', '[data-do-counter-increment]', function(){
-  var amount = $(this).data('do-counter-increment');
+  var amount = $(this).data('amount');
   counter.action.increment(amount)
 })
 
-counter.on('increment', function(state){
-  $el.find('[data-counter="value"]').text(state.value)
+counter.on('increment', function(counter){
+  $el.find('span.display').text(counter.state.value)
+})
+
+//good
+$el.on('click', '[data-counter="counter"]', function(counter){
+  var amount = $(this).data('params');
+  counter.action.increment(amount)
+})
+
+counter.on('increment', function(counter){
+  $el.find('[data-counter="value"]').text(counter.state.value)
 })
 ```
-Data attributes are not constrained by **view** structures. 
-This attributes is relatively free to change the **view**.
-It also tells that the event is bound only by html code.
+데이터 속성은 **View** 구조에 구속되지 않습니다. 
+**View** 변경에 비교적 자유로운 속성입니다.
+또 html 코드만으로 이벤트가 바인딩됨을 알려주는 역할도 합니다.
+
+### jquery-statebusking
+[jquery-statebusking](https://github.com/skt-t1-byungi/jquery-statebusking) - statebus를 backbone처럼 사용할 수 있습니다.
 
 ## License
 MIT

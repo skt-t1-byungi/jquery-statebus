@@ -9,15 +9,16 @@ const testBus = (name, extend = false) => $$(name,{
     value: 1
   },
   action: {
-    increment(ctx, v){ 
-      return {value: ctx.state.value + v} 
+    increment(v){ 
+      return {value: this.state.value + v} 
     },
-    incrementOne(ctx){
-      ctx.action.increment(1)
+    incrementOne(){
+      this.action.increment(1)
     },
-    delayIncrement(ctx, v, sec){
+    delayIncrement(v, sec){
+      var self = this
       return new Promise((resolve)=>{
-        setTimeout(()=> (ctx.action.increment(v), resolve()), sec * 1000);
+        setTimeout(()=> (self.action.increment(v), resolve()), sec * 1000);
       })
     }
   }
@@ -58,11 +59,11 @@ test('subscribe on act', t =>{
   t.deepEqual(triggers, { increment: 2, incrementOne: 1, globalIncrement: 2, globalIncrementOne: 1 })
 })
 
-test('listener parameters (state, prevState, action)', t =>{
+test('listener parameters ({state, prevState, action})', t =>{
   const bus = testBus('test3')
 
   let captured
-  bus.on('increment', (state, prevState) => (captured = {state, prevState}))
+  bus.on('increment', ({state, prevState}) => (captured = {state, prevState}))
   bus.action.increment(1)
 
   t.deepEqual(captured, { state: {value:2}, prevState: {value:1} })
@@ -70,7 +71,7 @@ test('listener parameters (state, prevState, action)', t =>{
   // scenario : act.incOne -> act.inc -> on.inc(1) -> on.incOne -> act.inc -> on.inc(2)
   let hits = 0
   bus.on('increment', _ => hits++)
-  bus.on('incrementOne', () => bus.action.increment(1))
+  bus.on('incrementOne', (bus) => bus.action.increment(1))
   bus.action.incrementOne() 
 
   t.is(hits, 2)
@@ -169,7 +170,7 @@ test('in listener, get arguments', t =>{
   const bus = testBus('test9')
   let capture
 
-  bus.on('increment', (_, __, {args:[v]})=> (capture = v))
+  bus.on('increment', (_, {args:[v]})=> (capture = v))
   bus.action.increment(123)
 
   t.is(capture, 123)
@@ -223,34 +224,32 @@ test('unsubscribe (global)', t =>{
 test('all listener', t =>{
   const bus = testBus('test13')
   let captured
-  bus.on('all', (_, __, {actionName})=> (captured = actionName))
+  bus.on('all', (_, {actionName})=> (captured = actionName))
   bus.action.increment(1)
   t.is(captured, 'increment')
   bus.action.incrementOne()
   t.is(captured, 'incrementOne')
 })
 
-test('helper', t =>{
-  const bus = $.statebus('helperTest', {
+test('methods', t =>{
+  const bus = $.statebus('methodTest', {
     state: {
       value: 1
     },
     action: {
-      add(ctx, v){ 
-        return {value : ctx.helper.add(v)} 
+      add(v){ 
+        return {value : this.add(v)} 
       }
     },
-    helper: {
-      add(ctx, v){
-        return ctx.state.value + v // using ctx
-      },
-      product(_, v){
-        return this.value * v //using this
-      }
+    add(v){
+      return this.state.value + v // using ctx
+    },
+    product(v){
+      return this.state.value * v //using this
     }
   })
 
   bus.action.add(2)
   t.is(bus.state.value, 3)
-  t.is(bus.helper.product(2), 6)
+  t.is(bus.product(2), 6)
 })
