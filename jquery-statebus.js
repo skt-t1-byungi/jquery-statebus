@@ -4,7 +4,6 @@
       : (factory(global.jQuery || global.$))
 }(window || this, function ($) {
   var extend = $.extend
-  var isPlainObject = $.isPlainObject
 
   var emitter = $({})
   var globalBus = {
@@ -31,7 +30,7 @@
         var prevState = localBus.state
         var willState = func.apply(localBus, args)
 
-        if (isPlainObject(willState)) {
+        if ($.isPlainObject(willState)) {
           globalBus.state[namespace] = localBus.state = extend({}, localBus.state, copy(willState))
           globalBus.prevState[namespace] = localBus.prevState = prevState
         }
