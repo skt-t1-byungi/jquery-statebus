@@ -4,7 +4,6 @@
       : (factory(global.jQuery || global.$))
 }(window || this, function ($) {
   var extend = $.extend
-
   var emitter = $({})
   var globalBus = {
     state: {},
@@ -20,8 +19,7 @@
 
   // constructor
   function statebus (namespace, definition, override) {
-    var localBus = extend({ state: {}, action: {}, prevState: null }, definition)
-    localBus.state = copy(localBus.state)
+    var localBus = extend({}, definition)
 
     // create actions
     $.each(localBus.action, function (actName, func) {
@@ -31,7 +29,7 @@
         var willState = func.apply(localBus, args)
 
         if ($.isPlainObject(willState)) {
-          globalBus.state[namespace] = localBus.state = extend({}, localBus.state, copy(willState))
+          globalBus.state[namespace] = localBus.state = extend({}, localBus.state, willState)
           globalBus.prevState[namespace] = localBus.prevState = prevState
         }
 
@@ -45,6 +43,7 @@
     if (override) {
       emitter.off(namespace)
     } else {
+      globalBus.prevState[namespace] = null
       extend(localBus.state, globalBus.state[namespace])
       extend(localBus.action, globalBus.action[namespace])
     }
@@ -53,10 +52,6 @@
     globalBus.action[namespace] = localBus.action
 
     return extend(localBus, {on: $.proxy(on, null, localBus, namespace)})
-  }
-
-  function copy (state) {
-    return JSON.parse(JSON.stringify(state))
   }
 
   function on (bus, namespace, evtName, listener, immediately) {
