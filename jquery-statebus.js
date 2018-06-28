@@ -14,7 +14,15 @@
   $.statebus = extend(
     statebus,
     globalBus,
-    { on: $.proxy(on, null, globalBus, null) }
+    {
+      on: $.proxy(on, null, globalBus, null),
+      remove: function (namespace) {
+        delete globalBus.state[namespace]
+        delete globalBus.action[namespace]
+        delete globalBus.prevState[namespace]
+        emitter.off(namespace)
+      }
+    }
   )
 
   // constructor
