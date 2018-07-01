@@ -28,6 +28,7 @@
   // constructor
   function statebus (namespace, definition, override) {
     var localBus = extend({}, definition)
+    localBus.action = extend({}, localBus.action)
 
     // create actions
     $.each(localBus.action, function (actName, func) {
