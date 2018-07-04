@@ -1,7 +1,7 @@
 {
   "name": "jquery-statebus",
   "description": "Small state management library for jQuery",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "author": {
     "name": "skt-t1-byungi",
     "email": "tiniwz@gmail.com"
