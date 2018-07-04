@@ -27,6 +27,8 @@
 
   // constructor
   function statebus (namespace, definition, override) {
+    if (!namespace) throw new TypeError('[jquery-statebus] "namespace" is required.')
+
     var localBus = extend({}, definition)
     localBus.action = extend({}, localBus.action)
 
