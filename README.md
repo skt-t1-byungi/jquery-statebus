@@ -112,6 +112,13 @@ counter.on('increment', function(counter){
 jquery.statebus는 마법이 없습니다. 
 직접 **View**와 연관된 **Action**을 구독하고 이전 상태와 비교해야 합니다.
 
+#### Unsubscribe
+```js
+var unsubscribe = counter.on('increment', function(){ ... })
+unsubscribe()
+```
+on메소드는 구독을 취소하는 함수를 반환합니다. 원하는 시점에 구독을 취소할 수 있습니다.
+
 #### Arguments
 ```js
 counter.on('increment', function(counter, ctx){
@@ -172,6 +179,16 @@ var re = $.statebus('test', {
 console.log( re.state ) // {v2: 2}
 ```
 오버라이드 옵션이 true면, 이전 정의(상태, 액션, 이벤트 리스너) 모두를 지우고 새로 정의합니다.
+
+### Remove
+```js
+// 생성
+$.statebus('counter', { ... })
+
+// 제거
+$.statebus.remove('counter')
+```
+remove 메소드를 사용해 생성된 상태, 액션을 제거할 수 있습니다.
 
 ## Why?
 jquery-statebus는 **View**와 **State**를 분리하는 게 목적입니다. 
