@@ -16,61 +16,72 @@
     globalBus,
     {
       on: $.proxy(on, null, globalBus, null),
-      remove: function (namespace) {
-        delete globalBus.state[namespace]
-        delete globalBus.action[namespace]
-        delete globalBus.prevState[namespace]
-        emitter.off(namespace)
+      remove: function (name) {
+        delete globalBus.state[name]
+        delete globalBus.action[name]
+        delete globalBus.prevState[name]
+
+        emitter.trigger(name + '.remove')
+        emitter.off(name)
       }
     }
   )
 
   // constructor
-  function statebus (namespace, definition, override) {
-    if (!namespace) throw new TypeError('[jquery-statebus] "namespace" is required.')
+  function statebus (name, def, override) {
+    if (typeof name !== 'string') {
+      throw new TypeError('[jquery-statebus] "name" is required.')
+    }
 
-    var localBus = extend({}, definition)
-    localBus.action = extend({}, localBus.action)
+    var localBus = objectCreate(def)
+    localBus.state = localBus.state || {}
 
     // create actions
-    $.each(localBus.action, function (actName, func) {
+    localBus.action = {}
+    $.each(def.action || {}, function (actName, func) {
       localBus.action[actName] = function () {
         var args = $.makeArray(arguments)
         var prevState = localBus.state
         var willState = func.apply(localBus, args)
 
         if ($.isPlainObject(willState)) {
-          globalBus.state[namespace] = localBus.state = extend({}, localBus.state, willState)
-          globalBus.prevState[namespace] = localBus.prevState = prevState
+          globalBus.state[name] = localBus.state = extend({}, localBus.state, willState)
+          globalBus.prevState[name] = localBus.prevState = prevState
         }
 
-        emitter.trigger(namespace + '.' + actName, [actName, args])
-        emitter.trigger(namespace + '.all', [actName, args])
+        emitter.trigger(name + '.' + actName, [actName, args])
+        emitter.trigger(name + '.all', [actName, args])
 
         return willState
       }
     })
 
     if (override) {
-      emitter.off(namespace)
+      emitter.off(name)
     } else {
-      globalBus.prevState[namespace] = null
-      extend(localBus.state, globalBus.state[namespace])
-      extend(localBus.action, globalBus.action[namespace])
+      globalBus.prevState[name] = null
+      extend(localBus.state, globalBus.state[name])
+      extend(localBus.action, globalBus.action[name])
     }
 
-    globalBus.state[namespace] = localBus.state
-    globalBus.action[namespace] = localBus.action
+    globalBus.state[name] = localBus.state
+    globalBus.action[name] = localBus.action
 
-    return extend(localBus, {on: $.proxy(on, null, localBus, namespace)})
+    return extend(localBus, {on: $.proxy(on, null, localBus, name)})
   }
 
-  function on (bus, namespace, evtName, listener, immediately) {
+  function objectCreate (proto) {
+    var Func = function () {}
+    Func.prototype = proto
+    return new Func()
+  }
+
+  function on (bus, name, evtName, listener, immediately) {
     if (immediately) listener(bus, {immediately: true})
 
-    if (namespace) {
-      evtName = $.map(evtName.split ? evtName.split(/\s+/) : evtName, function (name) {
-        return namespace + '.' + name
+    if (name) {
+      evtName = $.map(evtName.split ? evtName.split(/\s+/) : evtName, function (evtName) {
+        return name + '.' + evtName
       })
     }
 

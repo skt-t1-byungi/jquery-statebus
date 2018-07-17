@@ -232,7 +232,7 @@ test('all listener', t =>{
 })
 
 test('methods', t =>{
-  const bus = $.statebus('methodTest', {
+  const bus = $$('methodTest', {
     state: {
       value: 1
     },
@@ -252,4 +252,24 @@ test('methods', t =>{
   bus.action.add(2)
   t.is(bus.state.value, 3)
   t.is(bus.product(2), 6)
+})
+
+test.only('proto', t=>{
+  const bus = $$('proto_test', { test(){} })
+  t.is(typeof bus.test, 'function')
+  t.false(bus.hasOwnProperty('test'))
+})
+
+test('remove', t =>{
+  const bus = testBus('test14')
+  let called = 0
+  bus.on('remove', _ => called++)
+  bus.on('remove', _ => called++)
+  
+  t.is(called, 0)
+  t.truthy($$.state.test14)
+  
+  $$.remove('test14')
+  t.is(called, 2)
+  t.falsy($$.state.test14)
 })
