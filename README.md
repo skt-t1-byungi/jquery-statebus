@@ -52,18 +52,20 @@ require('jquery-statebus');
 
 ## How to use
 ### State
-네임스페이스로 **state**를 정의합니다.
+state를 정의합니다.
 ```js
-var counter = $.statebus('counter', {  // namespace는 'counter'가 됩니다.
+var counter = $.statebus('counter', {
   state: { value: 1 }
 })
 
-// counter.state.value  == 1
-// $.statebus.state.counter.value  == 1
+console.log(counter.state.value)
+// => 1
+console.log($.statebus.state.counter.value)
+// => 1
 ```
-`$.statebus.state[namespace]`로 다른 지역state를 가져올 수 있습니다.
 
 ### Action
+액션 메소드를 정의합니다.
 ```js
 var counter = $.statebus('counter', { 
   state: { value: 1 },
@@ -74,86 +76,97 @@ var counter = $.statebus('counter', {
   }
 })
 
-counter.action.increment(1) // "counter.state.value" to be 2
-$.statebus.action.counter.increment(2) // "counter.state.value" to be 4
+counter.action.increment(1) 
+// => counter.state.value === 2
+$.statebus.action.counter.increment(2) 
+// => counter.state.value === 4
 ```
-action의 반환결과로 상태를 바꿉니다. (`$.extend` 함수를 사용합니다.) 
-action 함수에서 `this`는  statebus 객체와 동일합니다.
+액션 메소드의 반환결과가 기존 상태와 병합되어 새로운 상태를 만듭니다.
+액션 메소드 안에서 `this`는  statebus 객체와 동일합니다.
 
-#### Action in action
+#### prevState
+액션 이벤트 발생 전, state를 얻을 수 있습니다.
 ```js
-$.statebus('counter', { 
-  state: { value: 1 },
-  action:{
-    increment: function(number){
-      return {value: this.state.value + number} 
-    },
-    delayIncrement: function(number, sec){
-      setTimeout(this.action.increment, sec * 1000, number)
-    }
-  }
-})
-
-counter.action.delayIncrement(1, 3)
-console.log( counter.state.value ) // 1
-
-// ..after 3sec.
-console.log( counter.state.value ) // 2
+counter.action.increment(1) 
+console.log(counter.state)
+// => {value: 2}
+console.log(counter.state.prevState)
+// => {value: 1}
 ```
+액션 이벤트가 한번도 발생하지 않았다면, prevState는 `null`입니다.
 
-### On(action, render [, immediately])
+### On(action, listener [, immediately])
+액션 이벤트를 구독합니다.
 ```js
-counter.on('increment', function(counter){
+counter.on('increment', function(){
   if(counter.state.value !== counter.prevState.value){
     $display.text(counter.state.value)
   }
 })
 ```
 jquery.statebus는 마법이 없습니다. 
-직접 **View**와 연관된 **Action**을 구독하고 이전 상태와 비교해야 합니다.
+직접 뷰와 연관된 이벤트를 구독하고 이전 상태와 비교해야 합니다.
+
+#### listener(instance, context)
+##### Instance
+statebus 객체를 리스너의 첫번째 인자로 받을 수 있습니다.
+```js
+var render = function(counter){
+  var value = counter.state.value
+  ...
+}
+...
+counter.on('increment', render)
+```
+리스너 선언 위치에서 statebus 객체를 접근하기 어려울 때, 편리합니다.
+
+##### Context
+액션 이벤트 관련 정보를 리스너의 두번째 인자로 받을 수 있습니다.
+- `context.actionName` - 액션이름
+- `context.args` - 액션 매개변수
+- `context.immediately` - 즉시 실행 여부. 자세한 내용 [Immediately](#immediately) 참조.
+
+```js
+counter.on('increment', function(_, context){
+  console.log(context)
+})
+
+counter.action.increment(10)
+// => {actionName: "increment", args: [10], immediately: false}
+```
+
+#### Immediately <span id="immediately"></span>
+3번째 인자가 true면 함수를 즉시 1회 실행합니다. 
+
+```js
+counter.on('increment', function (){ 
+  console.log('test') 
+}, true) // <-- !!여길 보세요!!
+```
 
 #### Unsubscribe
+on메소드는 구독을 취소하는 함수를 반환합니다. 
+원하는 시점에 구독을 취소할 수 있습니다.
+
 ```js
 var unsubscribe = counter.on('increment', function(){ ... })
 unsubscribe()
 ```
-on메소드는 구독을 취소하는 함수를 반환합니다. 원하는 시점에 구독을 취소할 수 있습니다.
-
-#### Arguments
-```js
-counter.on('increment', function(counter, ctx){
-  var amount = ctx.args[0]
-  ...
-})
-```
-필요하다면 액션의 인자를 얻을 수도 있습니다.
 
 #### Multiple subscription
 ```js
-// using space
 counter.on('increment decrement', view)
-
-// using array
+// 또는
 counter.on(['increment', 'decrement'], view)
 ```
-같은 **View** 변경을 공유하는 **Action**들은 언제나 존재합니다. 
-`space`, 또는 `array`로 한번에 여러 **Action**에 대해서 구독할 수 있습니다.
+여러 액션 이벤트의 공통 리스너 함수가 존재하면, 
+공백이나 배열로 여러 액션 이벤트를 구독할 수 있습니다.
 
 #### Global subscription
 ```js
 $.statebus.on(['counter.increment', 'other.update'], view)
 ```
-네임스페이스를 사용해서 서로 다른 지역 상태에 대한 변경을 같은 리스너로 구독할 수 있습니다.
-
-#### Immediately
-```js
-counter.on('increment', function (counter, ctx){
-  if(ctx.immediately) initView()
-  $display.text(counter.state.value)
-}, true)
-```
-3번째 인자가 true면 함수를 즉시 실행합니다. 
-**ctx.immediately**로 초기실행인지 판단할 수 있습니다.
+이름를 사용해서 서로 다른 지역 상태에 대한 변경을 같은 리스너로 구독할 수 있습니다.
 
 ### Override
 ```js
