@@ -7,10 +7,12 @@ var counter = $.statebus('counter', {
   state: {
     value: 0
   },
+
   action: {
     increment: function(number){
       return {value: this.state.value + number}
     },
+
     decrement: function(number){
       return {value: this.state.value - number}
     }
@@ -18,6 +20,7 @@ var counter = $.statebus('counter', {
 })
 
 var $el = $('.counter')
+
 $el.on('click', '[data-counter="increment"]', function(counter){
   counter.action.increment(1)
 })
@@ -60,6 +63,7 @@ var counter = $.statebus('counter', {
 
 console.log(counter.state.value)
 // => 1
+
 console.log($.statebus.state.counter.value)
 // => 1
 ```
@@ -69,6 +73,7 @@ console.log($.statebus.state.counter.value)
 ```js
 var counter = $.statebus('counter', { 
   state: { value: 1 },
+
   action:{
     increment: function(number){
       return {value: this.state.value + number} 
@@ -78,6 +83,7 @@ var counter = $.statebus('counter', {
 
 counter.action.increment(1) 
 // => counter.state.value === 2
+
 $.statebus.action.counter.increment(2) 
 // => counter.state.value === 4
 ```
@@ -88,8 +94,10 @@ $.statebus.action.counter.increment(2)
 액션 이벤트 발생 전, state를 얻을 수 있습니다.
 ```js
 counter.action.increment(1) 
+
 console.log(counter.state)
 // => {value: 2}
+
 console.log(counter.state.prevState)
 // => {value: 1}
 ```
@@ -122,9 +130,9 @@ counter.on('increment', render)
 
 ##### Context
 액션 이벤트 관련 정보를 리스너의 두번째 인자로 받을 수 있습니다.
-- `context.actionName` - 액션이름
+- `context.actionName` - 액션 이름
 - `context.args` - 액션 매개변수
-- `context.immediately` - 즉시 실행 여부. 자세한 내용 [Immediately](#immediately) 참조.
+- `context.immediately` - 즉시 실행 여부. 자세한 내용 [Immediately](#immediately-) 참조.
 
 ```js
 counter.on('increment', function(_, context){
@@ -135,17 +143,15 @@ counter.action.increment(10)
 // => {actionName: "increment", args: [10], immediately: false}
 ```
 
-#### Immediately <span id="immediately"></span>
+#### Immediately
 3번째 인자가 true면 함수를 즉시 1회 실행합니다. 
 
 ```js
-counter.on('increment', function (){ 
-  console.log('test') 
-}, true) // <-- !!여길 보세요!!
+counter.on('increment', function (){ ... }, true) // <-- !!여길 보세요!!
 ```
 
 #### Unsubscribe
-on메소드는 구독을 취소하는 함수를 반환합니다. 
+`on()`메소드는 구독해제 함수를 반환합니다. 
 원하는 시점에 구독을 취소할 수 있습니다.
 
 ```js
