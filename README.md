@@ -126,13 +126,13 @@ var render = function(counter){
 ...
 counter.on('increment', render)
 ```
-리스너 선언 위치에서 statebus 객체를 접근하기 어려울 때, 편리합니다.
+리스너 스코프안에서 statebus 객체를 접근하기 어려울 때, 편리합니다.
 
 ##### Context
 액션 이벤트 관련 정보를 리스너의 두번째 인자로 받을 수 있습니다.
 - `context.actionName` - 액션 이름
 - `context.args` - 액션 매개변수
-- `context.immediately` - 즉시 실행 여부. 자세한 내용 [Immediately](#immediately-) 참조.
+- `context.immediately` - 즉시 실행 여부. 자세한 내용 [Immediately](#immediately) 참조.
 
 ```js
 counter.on('increment', function(_, context){
@@ -150,13 +150,13 @@ counter.action.increment(10)
 counter.on('increment', function (){ ... }, true) // <-- !!여길 보세요!!
 ```
 
-#### Unsubscribe
+#### off
 `on()`메소드는 구독해제 함수를 반환합니다. 
 원하는 시점에 구독을 취소할 수 있습니다.
 
 ```js
-var unsubscribe = counter.on('increment', function(){ ... })
-unsubscribe()
+var off = counter.on('increment', function(){ ... })
+off()
 ```
 
 #### Multiple subscription
@@ -202,16 +202,21 @@ console.log( re.state ) // {v2: 2}
 ### Remove
 ```js
 // 생성
-$.statebus('counter', { ... })
+var counter = $.statebus('counter', { ... })
+counter.on('remove', function(){
+  console.log("removed!")
+})
 
 // 제거
 $.statebus.remove('counter')
+// removed!
 ```
-remove 메소드를 사용해 생성된 상태, 액션을 제거할 수 있습니다.
+remove 메소드를 사용해 생성된 statebus 객체를 제거할 수 있습니다.
+객체가 삭제될 때 remove 이벤트가 실행됩니다. 
 
 ## Why?
-jquery-statebus는 **View**와 **State**를 분리하는 게 목적입니다. 
-아래는 **View**와 **State**가 강하게 결합된 코드입니다.
+jquery-statebus는 **뷰**와 **상태**를 분리하는 게 목적입니다. 
+아래는 **뷰**와 **상태**가 결합되어 있는 Counter 예제입니다.
 
 ```js
 $('#counter > button.increment').click(function(){
@@ -220,24 +225,25 @@ $('#counter > button.increment').click(function(){
   $display.text(number + 1)
 })
 ```
-**View**에서 **State**를 얻습니다. 
+카운터 상태를 바꾸는 이벤트가 발생할 때, 카운터 숫자(상태)를 span태그(뷰)에서 얻습니다.
+이것을 도형화하면 아래와 같습니다.
 
 <p align="center"><img src="./assets/1.png"></p>
 
-이것을 도형화한 것입니다.
+이러한 관계는 기능이 늘어날수록 복잡한 네트워크를 만듭니다. 가면 갈수록 코드수정이 힘들어집니다.
 
 <p align="center"><img src="./assets/2.png"></p>
 
-기능이 늘어날수록 복잡한 네트워크를 만듭니다. 디자인변경, 기능추가가 힘들어집니다.
+
+jquery-statebus로 상태와 뷰를 분리하면 이러한 복잡성을 개선할 수 있습니다.
+상태를 메모리에 있는 독립된 객체에서 얻기 때문에 디자인 변경으로 다른 자바스크립트 코드가 망가지는 일을 최소화할 수 있습니다. 
 
 <p align="center"><img src="./assets/3.png"></p>
 
-jquery-statebus로 **State**와 **View**를 분리하면 이러한 복잡성을 개선할 수 있습니다.
+새로운 기능을 추가할 때도 뷰의 기능적 역할까지 파악해야 하는 부담이 줄어듭니다.
 
 <p align="center"><img src="./assets/4.png"></p>
 
-**State**를 메모리에 있는 독립된 객체에서 얻기 때문에 디자인 변경으로 다른 자바스크립트 코드가 망가지는 일을 최소화할 수 있습니다. 
-새로운 기능을 추가할 때도 **View** 역할까지 파악해야 하는 부담이 줄어듭니다.
 
 ## Tip
 ### Use data attribute.
